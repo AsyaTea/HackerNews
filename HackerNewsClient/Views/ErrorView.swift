@@ -14,8 +14,8 @@ struct ErrorView: View {
     }
 }
 
-struct ErrorView_Previews: PreviewProvider {
-    static var previews: some View {
-        ErrorView(dataVM: DataViewModel())
-    }
-}
+//struct ErrorView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        ErrorView(dataVM: DataViewModel())
+//    }
+//}

@@ -8,20 +8,23 @@
 import SwiftUI
 
 struct TabBar: View {
-    @StateObject var dataVM = DataViewModel()
+    @StateObject var recentNewsVM = DataViewModel(urlNumber: 0)
+    @StateObject var topNewsVM = DataViewModel(urlNumber: 1)
+    @StateObject var bestNewsVM = DataViewModel(urlNumber: 2)
+    
     var body: some View {
         TabView {
-            NewsListView(dataVM: dataVM)
+            NewsListView(dataVM: recentNewsVM)
                 .tabItem {
                     Image(systemName: "newspaper")
                     Text("News")
                 }
-            TopsList()
+            TopsList(dataVM: topNewsVM)
                 .tabItem {
                     Image(systemName: "newspaper")
                     Text("Top")
                 }
-            BestStoriesList()
+            BestStoriesList(dataVM: bestNewsVM)
                 .tabItem {
                     Image(systemName: "newspaper")
                     Text("Best Stories")
@@ -31,8 +34,8 @@ struct TabBar: View {
     }
 }
 
-struct TabBar_Previews: PreviewProvider {
-    static var previews: some View {
-        TabBar(dataVM: DataViewModel())
-    }
-}
+//struct TabBar_Previews: PreviewProvider {
+//    static var previews: some View {
+//        TabBar(dataVM: DataViewModel())
+//    }
+//}

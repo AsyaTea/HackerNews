@@ -17,6 +17,7 @@
 		4161FF4E286AFC4000CE5D29 /* DataViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4161FF4D286AFC4000CE5D29 /* DataViewModel.swift */; };
 		4161FF50286AFF0200CE5D29 /* NewsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4161FF4F286AFF0200CE5D29 /* NewsModel.swift */; };
 		4161FF52286B110500CE5D29 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4161FF51286B110500CE5D29 /* ErrorView.swift */; };
+		417D9E5A286B6E480045F883 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 417D9E59286B6E480045F883 /* Components.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,7 @@
 		4161FF4D286AFC4000CE5D29 /* DataViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataViewModel.swift; sourceTree = "<group>"; };
 		4161FF4F286AFF0200CE5D29 /* NewsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsModel.swift; sourceTree = "<group>"; };
 		4161FF51286B110500CE5D29 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
+		417D9E59286B6E480045F883 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +88,7 @@
 			children = (
 				4161FF45286AFA4100CE5D29 /* TabBar.swift */,
 				4161FF47286AFA6B00CE5D29 /* NewsListView.swift */,
+				417D9E59286B6E480045F883 /* Components.swift */,
 				4161FF49286AFA7700CE5D29 /* TopsListView.swift */,
 				4161FF4B286AFA8300CE5D29 /* BestStoriesListView.swift */,
 				4161FF51286B110500CE5D29 /* ErrorView.swift */,
@@ -186,6 +189,7 @@
 				4161FF38286AFA0000CE5D29 /* HackerNewsClientApp.swift in Sources */,
 				4161FF4E286AFC4000CE5D29 /* DataViewModel.swift in Sources */,
 				4161FF52286B110500CE5D29 /* ErrorView.swift in Sources */,
+				417D9E5A286B6E480045F883 /* Components.swift in Sources */,
 				4161FF4C286AFA8300CE5D29 /* BestStoriesListView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

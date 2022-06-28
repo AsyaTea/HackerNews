@@ -9,52 +9,61 @@ import Foundation
 
 class DataViewModel : ObservableObject {
     
-    @Published var newsList = [Int]()
+    @Published var newsListID = [Int]()
+
     @Published var news = [News]()
-    @Published var tops = [News]()
-    @Published var bestStories = [News]()
     
     @Published var isLoading: Bool = false
     @Published var error : String? = nil
     
-    let newsURL = "https://hacker-news.firebaseio.com/v0/newstories.json?print=pretty"
+    var urlNumber = 0
     
-    init() {
-        fetchNews()
+   
+    let urls = [
+        URL(string: "https://hacker-news.firebaseio.com/v0/newstories.json?print=pretty"),
+        URL(string: "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"),
+        URL(string: "https://hacker-news.firebaseio.com/v0/beststories.json?print=pretty"),
+    ]
+    
+    
+    init(urlNumber: Int)  {
+        print("sto creando il VM")
+        self.fetchNews(url: urls[urlNumber]!)
+        self.urlNumber = urlNumber
+   
     }
     
-    func fetchNews() {
+    func fetchNews(url: URL)  {
         
         isLoading = true
         
-        let url = URL(string: "https://hacker-news.firebaseio.com/v0/newstories.json?print=pretty")
+        let url = urls[0]
         
-        let task = URLSession.shared.dataTask(with: url!) { news, response, error in
-            
-            DispatchQueue.main.async {
-                self.isLoading = false
-                let decoder = JSONDecoder()
+            let task = URLSession.shared.dataTask(with: url!) { news, response, error in
                 
-                if let news = news {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    let decoder = JSONDecoder()
                     
-                    do {
-                        let news = try decoder.decode([Int].self, from: news)
-                        self.newsList = news
+                    if let news = news {
                         
-                        for newsID in self.newsList {
-                            self.fetchOneNews(newsID: newsID)
+                        do {
+                            self.newsListID = try decoder.decode([Int].self, from: news)
+                            print(self.newsListID)
+                            for newsID in self.newsListID {
+                                self.fetchOneNews(newsID: newsID)
+                            }
+                            
+                        } catch {
+                            print(error)
                         }
-                                              
-                    } catch {
-                        print(error)
                     }
                 }
             }
-        }
         
         task.resume()
-        
     }
+    
     
     func fetchOneNews(newsID: Int) {
         
@@ -70,7 +79,7 @@ class DataViewModel : ObservableObject {
                         
                         do {
                             let news = try decoder.decode(News.self, from: news)
-                           
+//                            print(self.urlNumber)
                             self.news.append(news)
                         } catch {
                             print(error)
