@@ -8,22 +8,43 @@
 import Foundation
 
 struct News: Codable, Hashable {
-    var id: UUID
-    var deleted: Bool?
+    
+    var id: Int
     var type: String?
     var by: String?
-    var time: Date?
-    var text: String?
-    var dead: Bool?
-    var parent: Int32?
-    var poll: Int32?
-    var kids: [UUID]?
+    var time: Int32?
+    var descendants : Int?
+//    var text: String?
+//    var kids: [Int]?
     var url : String?
     var score: Int?
     var title: String?
-    var parts: [Int32]?
-    var descendats: Int?
     
-
+//    enum CodingKeys: String, CodingKey {
+//        case id
+//        case by
+//        case time
+//        case type
+//        case descendants
+////        case kids
+//        case url
+//        case score
+//        case title
+//    }
     
+    init(from decoder: Decoder) throws {
+        
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(Int.self, forKey: .id)
+        by = try values.decode(String.self, forKey: .by)
+        type = try values.decode(String.self, forKey: .type)
+        descendants = try values.decode(Int.self, forKey: .descendants)
+        time = try values.decode(Int32.self, forKey: .time)
+//        text = try values.decode(String.self, forKey: .text)
+//        kids = try values.decode([Int].self, forKey: .kids)
+        url = try values.decode(String.self, forKey: .url)
+        score = try values.decode(Int.self, forKey: .score)
+        title = try values.decode(String.self, forKey: .title)
+        
+    }
 }
