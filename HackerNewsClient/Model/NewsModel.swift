@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct News: Codable, Hashable {
+struct Story: Codable, Hashable {
     
     var id: Int
     var type: String?
@@ -15,22 +15,10 @@ struct News: Codable, Hashable {
     var time: Int32?
     var descendants : Int?
 //    var text: String?
-//    var kids: [Int]?
+    var kids: [Int]?
     var url : String?
     var score: Int?
     var title: String?
-    
-//    enum CodingKeys: String, CodingKey {
-//        case id
-//        case by
-//        case time
-//        case type
-//        case descendants
-////        case kids
-//        case url
-//        case score
-//        case title
-//    }
     
     init(from decoder: Decoder) throws {
         
@@ -41,7 +29,7 @@ struct News: Codable, Hashable {
         descendants = try values.decode(Int.self, forKey: .descendants)
         time = try values.decode(Int32.self, forKey: .time)
 //        text = try values.decode(String.self, forKey: .text)
-//        kids = try values.decode([Int].self, forKey: .kids)
+        kids = try values.decode([Int].self, forKey: .kids)
         url = try values.decode(String.self, forKey: .url)
         score = try values.decode(Int.self, forKey: .score)
         title = try values.decode(String.self, forKey: .title)

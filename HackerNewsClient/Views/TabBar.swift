@@ -14,17 +14,17 @@ struct TabBar: View {
     
     var body: some View {
         TabView {
-            NewsListView(dataVM: recentNewsVM)
+            NewsListView(dataVM: recentNewsVM, list: 0)
                 .tabItem {
                     Image(systemName: "newspaper")
                     Text("News")
                 }
-            TopsList(dataVM: topNewsVM)
+            TopsList(dataVM: topNewsVM, list: 1)
                 .tabItem {
                     Image(systemName: "newspaper")
                     Text("Top")
                 }
-            BestStoriesList(dataVM: bestNewsVM)
+            BestStoriesList(dataVM: bestNewsVM, list: 2)
                 .tabItem {
                     Image(systemName: "newspaper")
                     Text("Best Stories")

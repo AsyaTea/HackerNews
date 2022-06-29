@@ -6,88 +6,94 @@
 //
 
 import Foundation
+import Dispatch
+
 
 class DataViewModel : ObservableObject {
     
-    @Published var newsListID = [Int]()
+    var storiesListID = [Int]()
 
-    @Published var news = [News]()
+    var stories = [Story]()
     
-    @Published var isLoading: Bool = false
+    @Published var newsCopy = [Story]()
+    
+    var initialStories = 20
+    @Published var isLoading: Bool = true
     @Published var error : String? = nil
     
-    var urlNumber = 0
+    @Published var loadingWebSite = false
     
-   
     let urls = [
         URL(string: "https://hacker-news.firebaseio.com/v0/newstories.json?print=pretty"),
         URL(string: "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"),
         URL(string: "https://hacker-news.firebaseio.com/v0/beststories.json?print=pretty"),
     ]
     
+    var urlNumber = 0
     
     init(urlNumber: Int)  {
-        print("sto creando il VM")
         self.fetchNews(url: urls[urlNumber]!)
         self.urlNumber = urlNumber
-   
     }
     
     func fetchNews(url: URL)  {
         
-        isLoading = true
-        
-        let url = urls[0]
-        
-            let task = URLSession.shared.dataTask(with: url!) { news, response, error in
+        let task = URLSession.shared.dataTask(with: url) { news, response, error in
+            
+            DispatchQueue.main.async {
                 
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    let decoder = JSONDecoder()
-                    
-                    if let news = news {
-                        
-                        do {
-                            self.newsListID = try decoder.decode([Int].self, from: news)
-                            print(self.newsListID)
-                            for newsID in self.newsListID {
-                                self.fetchOneNews(newsID: newsID)
-                            }
-                            
-                        } catch {
-                            print(error)
-                        }
-                    }
-                }
+                 let decoder = JSONDecoder()
+                 
+                 if let news = news {
+                     
+                     do {
+                         self.storiesListID = try decoder.decode([Int].self, from: news)
+                         self.storiesListID = self.storiesListID.sorted { $0 > $1 }
+                         let smallListID = self.storiesListID[..<self.initialStories]
+                         
+                         for newsID in smallListID {
+                             self.fetchOneNews(newsID: newsID)
+                         }
+                         
+                         
+                         
+                     } catch {
+                         print(error)
+                     }
+                 }
             }
-        
+        }
         task.resume()
     }
     
+    func loadMore(x: Int) {
+        let smallListID = self.storiesListID[self.initialStories..<self.initialStories+x]
+        for newsID in smallListID {
+            self.fetchOneNews(newsID: newsID)
+        }
+    }
     
     func fetchOneNews(newsID: Int) {
         
-            let newsUrl = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(newsID).json")
-            
-            let task = URLSession.shared.dataTask(with: newsUrl!) { news, response, error in
+        let newsUrl = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(newsID).json")
+        
+        let task = URLSession.shared.dataTask(with: newsUrl!) { news, response, error in
+                let decoder = JSONDecoder()
                 
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    let decoder = JSONDecoder()
+            DispatchQueue.main.async {
+                if let news = news {
                     
-                    if let news = news {
-                        
-                        do {
-                            let news = try decoder.decode(News.self, from: news)
-//                            print(self.urlNumber)
-                            self.news.append(news)
-                        } catch {
-                            print(error)
-                        }
+                    do {
+                        let news = try decoder.decode(Story.self, from: news)
+                        self.stories.append(news)
+                        self.isLoading = false
+                    } catch {
+                        print(error)
                     }
                 }
             }
-            
-            task.resume()
         }
+        task.resume()
+    }
+    
 }
