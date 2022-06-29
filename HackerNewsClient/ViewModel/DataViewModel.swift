@@ -13,9 +13,10 @@ class DataViewModel : ObservableObject {
     
     var storiesListID = [Int]()
 
-    var stories = [Story]()
+    @Published var stories = [Item]()
     
-    @Published var newsCopy = [Story]()
+    var storyCommentsIDs = [Int]()
+    @Published var comments = [Item]()
     
     var initialStories = 20
     @Published var isLoading: Bool = true
@@ -47,15 +48,13 @@ class DataViewModel : ObservableObject {
                  if let news = news {
                      
                      do {
-                         self.storiesListID = try decoder.decode([Int].self, from: news)
-                         self.storiesListID = self.storiesListID.sorted { $0 > $1 }
+                         let storiesListID = try decoder.decode([Int].self, from: news)
+                         self.storiesListID = storiesListID.sorted { $0 > $1 }
                          let smallListID = self.storiesListID[..<self.initialStories]
                          
                          for newsID in smallListID {
-                             self.fetchOneNews(newsID: newsID)
+                             self.fetchOneItem(newsID: newsID)
                          }
-                         
-                         
                          
                      } catch {
                          print(error)
@@ -69,24 +68,81 @@ class DataViewModel : ObservableObject {
     func loadMore(x: Int) {
         let smallListID = self.storiesListID[self.initialStories..<self.initialStories+x]
         for newsID in smallListID {
-            self.fetchOneNews(newsID: newsID)
+            self.fetchOneItem(newsID: newsID)
         }
     }
     
-    func fetchOneNews(newsID: Int) {
+    func fetchOneItem(newsID: Int) {
         
         let newsUrl = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(newsID).json")
         
         let task = URLSession.shared.dataTask(with: newsUrl!) { news, response, error in
-                let decoder = JSONDecoder()
+            let decoder = JSONDecoder()
                 
             DispatchQueue.main.async {
                 if let news = news {
                     
                     do {
-                        let news = try decoder.decode(Story.self, from: news)
+                        let news = try decoder.decode(Item.self, from: news)
                         self.stories.append(news)
+                        if self.stories.count >= 2 {
+                            self.stories.sort {
+                                $0.score! > $1.score!
+                            }
+                        }
                         self.isLoading = false
+                    } catch {
+                        print(error)
+                    }
+                }
+            }
+        }
+        task.resume()
+    }
+    
+    func fetchComments(storyID: Int) {
+        
+        let storyURL = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(storyID).json")
+        
+        let task = URLSession.shared.dataTask(with: storyURL!) { comments, response, error in
+            
+            let decoder = JSONDecoder()
+            DispatchQueue.main.async {
+                if let comments = comments {
+                    
+                    do {
+                        let commentsListID = try decoder.decode([Int].self, from: comments)
+                        self.storyCommentsIDs = commentsListID.sorted { $0 > $1 }
+                        print(self.storyCommentsIDs)
+                        
+                        for commentID in self.storyCommentsIDs {
+                            self.fetchOneComment(commentID: commentID)
+                        }
+                        
+                    } catch {
+                        print(error)
+                    }
+                }
+            }
+
+        }
+        
+        task.resume()
+    }
+    
+    func fetchOneComment(commentID: Int) {
+        let commentUrl = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(commentID).json")
+        
+        let task = URLSession.shared.dataTask(with: commentUrl!) { comment, response, error in
+            let decoder = JSONDecoder()
+                
+            DispatchQueue.main.async {
+                if let comment = comment {
+                    
+                    do {
+                        let comment = try decoder.decode(Item.self, from: comment)
+                        self.comments.append(comment)
+//                        self.isLoading = false
                     } catch {
                         print(error)
                     }

@@ -7,14 +7,15 @@
 
 import Foundation
 
-struct Story: Codable, Hashable {
+struct Item: Codable, Hashable {
     
     var id: Int
     var type: String?
     var by: String?
     var time: Int32?
     var descendants : Int?
-//    var text: String?
+    var text: String?
+    var parent: Int?
     var kids: [Int]?
     var url : String?
     var score: Int?
@@ -28,9 +29,18 @@ struct Story: Codable, Hashable {
         type = try values.decode(String.self, forKey: .type)
         descendants = try values.decode(Int.self, forKey: .descendants)
         time = try values.decode(Int32.self, forKey: .time)
-//        text = try values.decode(String.self, forKey: .text)
-        kids = try values.decode([Int].self, forKey: .kids)
-        url = try values.decode(String.self, forKey: .url)
+        if values.contains(.parent) {
+            parent = try values.decode(Int.self, forKey: .parent)
+        }
+        if values.contains(.text) {
+            text = try values.decode(String.self, forKey: .text)
+        }
+        if values.contains(.kids) {
+            kids = try values.decode([Int].self, forKey: .kids)
+        }
+        if values.contains(.url) {
+            url = try values.decode(String.self, forKey: .url)
+        }      
         score = try values.decode(Int.self, forKey: .score)
         title = try values.decode(String.self, forKey: .title)
         
