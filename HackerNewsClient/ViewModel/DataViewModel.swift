@@ -12,17 +12,15 @@ import Dispatch
 class DataViewModel : ObservableObject {
     
     var storiesListID = [Int]()
-
+    
+    @Published var listType = 0
     @Published var stories = [Item]()
+    
     var newStories = [Int]()
+    var initialStories = 20
     
-    var storyCommentsIDs = [Int]()
-    @Published var comments = [Item]()
-    
-    var initialStories = 5
     @Published var isLoading: Bool = true
     @Published var error : String? = nil
-    
     @Published var loadingWebSite = false
     
     let urls = [
@@ -30,38 +28,36 @@ class DataViewModel : ObservableObject {
         URL(string: "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"),
         URL(string: "https://hacker-news.firebaseio.com/v0/beststories.json?print=pretty"),
     ]
-    
     var urlNumber = 0
     
-    init(urlNumber: Int)  {
-        self.fetchNews(url: urls[urlNumber]!)
-        self.urlNumber = urlNumber
+    //FAVOURITES OBJECTS
+    @Published var savedItems: Set<Int> = []
+    private var db = Database()
+    var filteredStories : [Item] {
+        return stories.filter { savedItems.contains($0.id) }
     }
     
-    func fetchNews(url: URL)  {
+    init(urlNumber: Int)  {
+        self.fetchStories(url: urls[urlNumber]!)
+        self.urlNumber = urlNumber
+        self.savedItems = db.load()
+    }
+    
+    func fetchStories(url: URL)  {
         
-//        self.newStories = [Item]()
-        
-        let task = URLSession.shared.dataTask(with: url) { news, response, error in
+        let task = URLSession.shared.dataTask(with: url) { stories, response, error in
             
             DispatchQueue.main.async {
                 
                  let decoder = JSONDecoder()
-                 
-                 if let news = news {
+                 if let news = stories {
                      
                      do {
                         self.storiesListID = try decoder.decode([Int].self, from: news)
-//                         print(storiesListID)
                          let smallListID = self.storiesListID[..<self.initialStories]
-                         
-                         for newsID in smallListID {
-                             self.fetchOneItem(newsID: newsID)
+                         for storyID in smallListID {
+                             self.fetchOneItem(newsID: storyID)
                          }
-                         
-                       
-                         
-                         
                      } catch {
                          print(error)
                      }
@@ -71,29 +67,27 @@ class DataViewModel : ObservableObject {
         task.resume()
     }
     
-    func loadMore(x: Int) {
-        print("loading more")
-//        self.stories = [Item]()
-        let smallListID = self.storiesListID[self.initialStories..<self.initialStories+x]
-        self.initialStories = self.initialStories + x
-              for newsID in smallListID {
-                  self.fetchOneItem(newsID: newsID)
-              }
+    func loadMore(moreStories: Int) {
+
+        let smallListID = self.storiesListID[self.initialStories..<self.initialStories+moreStories]
+        self.initialStories = self.initialStories + moreStories
+          for storiesID in smallListID {
+              self.fetchOneItem(newsID: storiesID)
+          }
     }
     
     func refresh(url: URL) {
         
-        //caricare quelle che non ho e riordinare
-        let task = URLSession.shared.dataTask(with: url) { news, response, error in
+        let task = URLSession.shared.dataTask(with: url) { storiesID, response, error in
             
             DispatchQueue.main.async {
                 
                  let decoder = JSONDecoder()
                  
-                 if let news = news {
+                 if let stories = storiesID {
                      
                      do {
-                        self.newStories = try decoder.decode([Int].self, from: news)
+                        self.newStories = try decoder.decode([Int].self, from: stories)
                          
                          for newStory in self.newStories {
                              if !self.storiesListID.contains(newStory) {
@@ -109,25 +103,22 @@ class DataViewModel : ObservableObject {
             }
         }
         task.resume()
-        
     }
     
     func fetchOneItem(newsID: Int) {
+       
+        let storyUrl = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(newsID).json")
         
-      
-        
-        let newsUrl = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(newsID).json")
-        
-        let task = URLSession.shared.dataTask(with: newsUrl!) { news, response, error in
+        let task = URLSession.shared.dataTask(with: storyUrl!) { story, response, error in
             let decoder = JSONDecoder()
                 
             DispatchQueue.main.async {
-                if let news = news {
+                if let story = story {
                     
                     do {
-                        let news = try decoder.decode(Item.self, from: news)
+                        let story = try decoder.decode(Item.self, from: story)
                         
-                        self.stories.append(news)
+                        self.stories.append(story)
                         if self.urlNumber == 0 {
                             if self.stories.count >= 2{
                                 self.stories.sort {
@@ -135,11 +126,7 @@ class DataViewModel : ObservableObject {
                                 }
                             }
                         }
-//                        if self.storiesCopy.count >= 2 {
-//                            self.storiesCopy.sort {
-//                                $0.score! > $1.score!
-//                            }
-//                        }
+
                         self.isLoading = false
                     } catch {
                         print(error)
@@ -150,56 +137,19 @@ class DataViewModel : ObservableObject {
         task.resume()
     }
     
-    func fetchComments(storyID: Int) {
-        
-        let storyURL = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(storyID).json")
-        
-        let task = URLSession.shared.dataTask(with: storyURL!) { comments, response, error in
-            
-            let decoder = JSONDecoder()
-            DispatchQueue.main.async {
-                if let comments = comments {
-                    
-                    do {
-                        let commentsListID = try decoder.decode([Int].self, from: comments)
-                        self.storyCommentsIDs = commentsListID.sorted { $0 > $1 }
-                        print(self.storyCommentsIDs)
-                        
-                        for commentID in self.storyCommentsIDs {
-                            self.fetchOneComment(commentID: commentID)
-                        }
-                        
-                    } catch {
-                        print(error)
-                    }
-                }
-            }
-
-        }
-        
-        task.resume()
+    
+    // MARK: -  FAVOURITES FUNCTIONS
+    
+    func contains(item: Item) -> Bool {
+        savedItems.contains(item.id)
     }
     
-    func fetchOneComment(commentID: Int) {
-        let commentUrl = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(commentID).json")
-        
-        let task = URLSession.shared.dataTask(with: commentUrl!) { comment, response, error in
-            let decoder = JSONDecoder()
-                
-            DispatchQueue.main.async {
-                if let comment = comment {
-                    
-                    do {
-                        let comment = try decoder.decode(Item.self, from: comment)
-                        self.comments.append(comment)
-//                        self.isLoading = false
-                    } catch {
-                        print(error)
-                    }
-                }
-            }
+    func toggleFav(item: Item) {
+        if contains(item: item) {
+            savedItems.remove(item.id)
+        } else {
+            savedItems.insert(item.id)
         }
-        task.resume()
+        db.save(favouritesID: savedItems)
     }
-    
 }

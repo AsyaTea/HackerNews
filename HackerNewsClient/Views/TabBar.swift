@@ -12,22 +12,18 @@ struct TabBar: View {
     @StateObject var topNewsVM = DataViewModel(urlNumber: 1)
     @StateObject var bestNewsVM = DataViewModel(urlNumber: 2)
     
+
     var body: some View {
         TabView {
-            NewsListView(dataVM: recentNewsVM, list: 0)
+            NewsListView(recentNewsVM: recentNewsVM, topNewsVM: topNewsVM, bestNewsVM: bestNewsVM)
                 .tabItem {
                     Image(systemName: "newspaper")
                     Text("News")
                 }
-            TopsList(dataVM: topNewsVM, list: 1)
+            FavouriteList(recentNewsVM: recentNewsVM, topNewsVM: topNewsVM, bestNewsVM: bestNewsVM)
                 .tabItem {
-                    Image(systemName: "newspaper")
-                    Text("Top")
-                }
-            BestStoriesList(dataVM: bestNewsVM, list: 2)
-                .tabItem {
-                    Image(systemName: "newspaper")
-                    Text("Best Stories")
+                    Image(systemName: "star.fill")
+                    Text("Favourites")
                 }
         }
         

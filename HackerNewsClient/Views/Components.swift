@@ -8,7 +8,6 @@
 import Foundation
 import SwiftUI
 import WebKit
-import UIKit
 
 struct ListView : View {
     @ObservedObject var dataVM: DataViewModel
@@ -19,29 +18,22 @@ struct ListView : View {
     var body: some View {
             List {
                 ForEach(dataVM.stories, id: \.self) { news in
-                    
-                    NavigationLink(destination: newsView(dataVM: dataVM, news: news)) {
+                    NavigationLink(destination: newsView(dataVM: dataVM, story: news)) {
                         CustomCell(news: news)
                     }
                     .onAppear {
-//                        dataVM.showStories()
                         if news == dataVM.stories.last {
-                            dataVM.loadMore(x: 5)
+                            dataVM.loadMore(moreStories: 5)
                               }
                            }
                 }
-                if isLoading { // 7
+                if isLoading {
                      ProgressView()
                        .frame(idealWidth: .infinity, maxWidth: .infinity, alignment: .center)
                    }
             }
-//            .gesture( DragGesture()
-//                        .onChanged { value in
-//                            print("hello im swiping hehe")
-//                            dataVM.loadMore()
-//                })
             .refreshable {
-                print("Refreshing")
+                print("Refresh")
                 dataVM.refresh(url: dataVM.urls[dataVM.urlNumber]!)
             }
         
@@ -50,31 +42,29 @@ struct ListView : View {
 
 struct CustomCell: View {
         
-    var news: Item
+    var story: Item
     var date: Date
         
     init(news: Item) {
-        self.news = news
+        self.story = news
         self.date = Date(timeIntervalSince1970: TimeInterval(news.time!))
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            if news.title != nil {
-                Text(news.title!)
+            if story.title != nil {
+                Text(story.title!)
                     .font(.headline)
             }
             HStack{
-                Text("by \(news.by!)")
-
-                if news.time != nil {
+                Text("by \(story.by!)")
+                if story.time != nil {
                     Text("\(dateFormatter(time: date))")
                 }
-                
                 Image(systemName: "text.bubble")
-                Text(String(news.kids?.count ?? 0))
+                Text(String(story.kids?.count ?? 0))
                 Spacer()
-                Text("Score: \(String(news.score ?? 0))")
+                Text("Score: \(String(story.score ?? 0))")
             }
             .font(.subheadline)
         }
@@ -90,17 +80,33 @@ struct CustomCell: View {
 struct newsView: View {
     
     @ObservedObject var dataVM: DataViewModel
-    var news: Item
+    var story: Item
+    @State var isFavourite = false
     
     var body: some View {
         
             VStack(alignment: .leading, spacing: 10) {
-                Website(dataVM: dataVM, news: news)
+                Website(dataVM: dataVM, story: story)
             }
             .padding(20)
             .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("Story")
-        
+            .toolbar {
+                HStack{
+                    Spacer()
+                    Button {
+                        isFavourite.toggle()
+                        dataVM.toggleFav(item: story)
+                    } label: {
+                        if dataVM.contains(item: story) {
+                            Image(systemName: "star.fill")
+                        } else {
+                            Image(systemName: "star")
+                        }
+                        
+                    }
+                }
+            }
     }
 }
 
@@ -109,53 +115,41 @@ struct Website: View {
     @State private var showWebView = false
     @State private var modalView = false
     @ObservedObject var dataVM: DataViewModel
-    var news: Item
+    var story: Item
     var body: some View {
         
         NavigationView {
             VStack {
-                if let website = news.url {
-                
-                    WebView(url: URL(string: website)!, showWebView: $showWebView)
-//                        .overlay(showWebView ? ProgressView("Loading").toAnyView() : EmptyView().toAnyView())
-//                        .overlay {
-//                            if showWebView == false {
-//                                ProgressView()
-//                            }
-                           
-                        
-//                        .onAppear {
-//                            print(" showwebview\(showWebView)")
-//                        }
-                                
-                }               
-            }    
-            .overlay(
-                VStack{
-                    Spacer()
-                    Button {
-                         modalView.toggle()
-//                        dataVM.fetchComments(storyID: news.id)
-                     } label: {
-                         ZStack{
-                             RoundedRectangle(cornerRadius: 10)
-                                 .frame(width: 380, height: 50, alignment: .bottom)
-                             Text("View Comments")
-                                 .foregroundColor(.white)
-                                
-                         }
-                     }
-                     .sheet(isPresented: $modalView) {
-                         CommentsView(dataVM: dataVM, modalView: $modalView)
-                             .onAppear {
-//                                 dataVM.fetchComments(storyID: news.id)
-                             }
-                     }
+                if let website = story.url {
+                    WebView(url: URL(string: website)!)
+                } else if story.text != nil {
+                    VStack{
+                        Text("Item type \(story.type ?? "")")
+                        Text(story.text ?? "")
+                    }
                 }
-            )
-
+            }    
+//            .overlay(
+//                VStack{
+//                    Spacer()
+//                    Button {
+//                         modalView.toggle()
+//                     } label: {
+//                         ZStack{
+//                             RoundedRectangle(cornerRadius: 10)
+//                                 .frame(width: 380, height: 50, alignment: .bottom)
+//                             Text("View Comments")
+//                                 .foregroundColor(.white)
+//                         }
+//                     }
+//                     .sheet(isPresented: $modalView) {
+//                         CommentsView(dataVM: dataVM, modalView: $modalView)
+//                             .onAppear {
+//                             }
+//                     }
+//                }
+//            )
         }
-
     }
 }
 
@@ -163,48 +157,27 @@ struct CommentsView: View {
     @ObservedObject var dataVM: DataViewModel
     @Binding var modalView : Bool
     var body: some View {
-        NavigationView {
-            VStack{
-                ForEach(dataVM.comments, id:\.self) { comment in
-                    Text(comment.text!)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(
-                leading:
-                    Button(action: {
-                        modalView.toggle()
-                    }, label: {
-                        HStack{
-                            Text("< Back")
-                        }
-                    })
-
-            )
-        }
+//        NavigationView {
+//            VStack{
+//                ForEach(dataVM.comments, id:\.self) { comment in
+//                    Text(comment.text!)
+//                }
+//            }
+//            .navigationBarTitleDisplayMode(.inline)
+//            .navigationBarItems(
+//                leading:
+//                    Button(action: {
+//                        modalView.toggle()
+//                    }, label: {
+//                        HStack{
+//                            Text("< Back")
+//                        }
+//                    })
+//
+//            )
+//        }
+        Text("Here are the comments")
 
     }
 }
 
-struct WebView: UIViewRepresentable {
- 
-    var url: URL
-    @Binding var showWebView : Bool
- 
-    func makeUIView(context: Context) -> WKWebView {
-        
-        showWebView = true
-        return WKWebView()
-    }
- 
-    func updateUIView(_ webView: WKWebView, context: Context) {
-        let request = URLRequest(url: url)
-        webView.load(request)
-    }
-}
-
-extension View {
-    func toAnyView() -> AnyView {
-        AnyView(self)
-    }
-}

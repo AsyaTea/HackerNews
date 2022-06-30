@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ErrorView: View {
-    @ObservedObject var dataVM : DataViewModel
+   
     var body: some View {
         Text("Something went wrong!")
     }

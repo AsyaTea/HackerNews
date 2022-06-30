@@ -8,20 +8,44 @@
 import SwiftUI
 
 struct NewsListView: View {
-    @ObservedObject var dataVM: DataViewModel
-    var list : Int
+    @ObservedObject var recentNewsVM : DataViewModel
+    @ObservedObject var topNewsVM : DataViewModel
+    @ObservedObject var bestNewsVM : DataViewModel
+    
+    @State private var listType = 0
+    
     var body: some View {
         NavigationView{            
             VStack{
-                if dataVM.isLoading {
-                    ProgressView()                   
-                } else if dataVM.error != nil {
-                    ErrorView(dataVM: dataVM)
-                  
-                } else {
-                    ListView(dataVM: dataVM, list: 0)
-                  
+                Picker("", selection: $listType) {
+                    Text("News").tag(0)
+                    Text("Top").tag(1)
+                    Text("Best Stories").tag(2)
                 }
+                .pickerStyle(.segmented)
+                .padding()
+                  
+                if listType == 0 {
+                    if recentNewsVM.isLoading {
+                        ProgressView("Loading")
+                    } else {
+                        ListView(dataVM: recentNewsVM, list: 0)
+                    }
+                  
+                } else if listType == 1 {
+                    if topNewsVM.isLoading {
+                        ProgressView("Loading")
+                    } else {
+                        ListView(dataVM: topNewsVM, list: 1)
+                    }
+                } else {
+                    if bestNewsVM.isLoading {
+                        ProgressView("Loading")
+                    } else {
+                        ListView(dataVM: bestNewsVM, list: 2)
+                    }
+                }
+                
             }
             .navigationTitle("Hacker News")
         }
@@ -30,8 +54,8 @@ struct NewsListView: View {
 
 
 
-struct NewsList_Previews: PreviewProvider {
-    static var previews: some View {
-        NewsListView(dataVM: DataViewModel(urlNumber: 0), list: 0)
-    }
-}
+//struct NewsList_Previews: PreviewProvider {
+//    static var previews: some View {
+//        NewsListView()
+//    }
+//}
