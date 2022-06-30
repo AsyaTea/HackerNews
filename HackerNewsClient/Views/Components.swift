@@ -81,6 +81,7 @@ struct newsView: View {
     
     @ObservedObject var dataVM: DataViewModel
     var story: Item
+    
     @State var isFavourite = false
     
     var body: some View {
@@ -116,6 +117,14 @@ struct Website: View {
     @State private var modalView = false
     @ObservedObject var dataVM: DataViewModel
     var story: Item
+    var date: Date
+    
+    init(dataVM: DataViewModel, story: Item) {
+        self.date = Date(timeIntervalSince1970: TimeInterval(story.time!))
+        self.dataVM = dataVM
+        self.story = story
+    }
+    
     var body: some View {
         
         NavigationView {
@@ -123,11 +132,20 @@ struct Website: View {
                 if let website = story.url {
                     WebView(url: URL(string: website)!)
                 } else if story.text != nil {
-                    VStack{
-                        Text("Item type \(story.type ?? "")")
-                        Text(story.text ?? "")
+                    VStack(alignment: .leading, spacing: 20){
+                        Text("Author:  \(story.by ?? "")")
+                            .fontWeight(.bold)
+                        Text("Item type:  \(story.type ?? "")")
+                        if story.time != nil {
+                            Text("Date published: \(dateFormatter(time: date))")
+                        }
+                        Text(story.text ?? "No data to show")
+                        Spacer()
+                        Spacer()
                     }
+                    
                 }
+               
             }    
 //            .overlay(
 //                VStack{
@@ -150,6 +168,12 @@ struct Website: View {
 //                }
 //            )
         }
+    }
+    
+    func dateFormatter(time: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM/yyyy"
+        return formatter.string(from: time)
     }
 }
 

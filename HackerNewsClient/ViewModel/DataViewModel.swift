@@ -36,6 +36,7 @@ class DataViewModel : ObservableObject {
     var filteredStories : [Item] {
         return stories.filter { savedItems.contains($0.id) }
     }
+    // -----------------
     
     init(urlNumber: Int)  {
         self.fetchStories(url: urls[urlNumber]!)

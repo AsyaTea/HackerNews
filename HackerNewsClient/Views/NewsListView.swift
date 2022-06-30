@@ -27,7 +27,12 @@ struct NewsListView: View {
                   
                 if listType == 0 {
                     if recentNewsVM.isLoading {
-                        ProgressView("Loading")
+                        VStack {
+                            Spacer()
+                            ProgressView("Loading")
+                            Spacer()
+                        }
+                     
                     } else {
                         ListView(dataVM: recentNewsVM, list: 0)
                     }
