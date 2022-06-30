@@ -40,9 +40,3 @@ struct FavouriteList: View {
     
 
 }
-
-//struct FavouriteList_Previews: PreviewProvider {
-//    static var previews: some View {
-//        FavouriteList()
-//    }
-//}

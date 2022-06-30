@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import WebKit
 
 struct ListView : View {
     @ObservedObject var dataVM: DataViewModel
@@ -147,26 +146,6 @@ struct Website: View {
                 }
                
             }    
-//            .overlay(
-//                VStack{
-//                    Spacer()
-//                    Button {
-//                         modalView.toggle()
-//                     } label: {
-//                         ZStack{
-//                             RoundedRectangle(cornerRadius: 10)
-//                                 .frame(width: 380, height: 50, alignment: .bottom)
-//                             Text("View Comments")
-//                                 .foregroundColor(.white)
-//                         }
-//                     }
-//                     .sheet(isPresented: $modalView) {
-//                         CommentsView(dataVM: dataVM, modalView: $modalView)
-//                             .onAppear {
-//                             }
-//                     }
-//                }
-//            )
         }
     }
     
@@ -181,27 +160,7 @@ struct CommentsView: View {
     @ObservedObject var dataVM: DataViewModel
     @Binding var modalView : Bool
     var body: some View {
-//        NavigationView {
-//            VStack{
-//                ForEach(dataVM.comments, id:\.self) { comment in
-//                    Text(comment.text!)
-//                }
-//            }
-//            .navigationBarTitleDisplayMode(.inline)
-//            .navigationBarItems(
-//                leading:
-//                    Button(action: {
-//                        modalView.toggle()
-//                    }, label: {
-//                        HStack{
-//                            Text("< Back")
-//                        }
-//                    })
-//
-//            )
-//        }
         Text("Here are the comments")
-
     }
 }
 
