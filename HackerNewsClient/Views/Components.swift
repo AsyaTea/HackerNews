@@ -12,6 +12,7 @@ import UIKit
 
 struct ListView : View {
     @ObservedObject var dataVM: DataViewModel
+    @State var isLoading = false
     @State private var showNews = false
     var list : Int
     
@@ -22,16 +23,26 @@ struct ListView : View {
                     NavigationLink(destination: newsView(dataVM: dataVM, news: news)) {
                         CustomCell(news: news)
                     }
+                    .onAppear {
+//                        dataVM.showStories()
+                        if news == dataVM.stories.last {
+                            dataVM.loadMore(x: 5)
+                              }
+                           }
                 }
+                if isLoading { // 7
+                     ProgressView()
+                       .frame(idealWidth: .infinity, maxWidth: .infinity, alignment: .center)
+                   }
             }
-            .gesture( DragGesture()
-                        .onChanged { value in
-                            print("hello im swiping hehe")
-                            dataVM.loadMore(x: 20)
-                })
+//            .gesture( DragGesture()
+//                        .onChanged { value in
+//                            print("hello im swiping hehe")
+//                            dataVM.loadMore()
+//                })
             .refreshable {
                 print("Refreshing")
-//                self.dataVM = DataViewModel(urlNumber: list)
+                dataVM.refresh(url: dataVM.urls[dataVM.urlNumber]!)
             }
         
     }
@@ -104,8 +115,19 @@ struct Website: View {
         NavigationView {
             VStack {
                 if let website = news.url {
+                
                     WebView(url: URL(string: website)!, showWebView: $showWebView)
-                        .overlay(showWebView ? ProgressView("Loading").toAnyView() : EmptyView().toAnyView())
+//                        .overlay(showWebView ? ProgressView("Loading").toAnyView() : EmptyView().toAnyView())
+//                        .overlay {
+//                            if showWebView == false {
+//                                ProgressView()
+//                            }
+                           
+                        
+//                        .onAppear {
+//                            print(" showwebview\(showWebView)")
+//                        }
+                                
                 }               
             }    
             .overlay(
@@ -170,6 +192,7 @@ struct WebView: UIViewRepresentable {
     @Binding var showWebView : Bool
  
     func makeUIView(context: Context) -> WKWebView {
+        
         showWebView = true
         return WKWebView()
     }

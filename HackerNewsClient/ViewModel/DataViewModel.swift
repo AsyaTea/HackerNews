@@ -14,11 +14,12 @@ class DataViewModel : ObservableObject {
     var storiesListID = [Int]()
 
     @Published var stories = [Item]()
+    var newStories = [Int]()
     
     var storyCommentsIDs = [Int]()
     @Published var comments = [Item]()
     
-    var initialStories = 20
+    var initialStories = 5
     @Published var isLoading: Bool = true
     @Published var error : String? = nil
     
@@ -39,6 +40,8 @@ class DataViewModel : ObservableObject {
     
     func fetchNews(url: URL)  {
         
+//        self.newStories = [Item]()
+        
         let task = URLSession.shared.dataTask(with: url) { news, response, error in
             
             DispatchQueue.main.async {
@@ -48,13 +51,16 @@ class DataViewModel : ObservableObject {
                  if let news = news {
                      
                      do {
-                         let storiesListID = try decoder.decode([Int].self, from: news)
-                         self.storiesListID = storiesListID.sorted { $0 > $1 }
+                        self.storiesListID = try decoder.decode([Int].self, from: news)
+//                         print(storiesListID)
                          let smallListID = self.storiesListID[..<self.initialStories]
                          
                          for newsID in smallListID {
                              self.fetchOneItem(newsID: newsID)
                          }
+                         
+                       
+                         
                          
                      } catch {
                          print(error)
@@ -66,13 +72,49 @@ class DataViewModel : ObservableObject {
     }
     
     func loadMore(x: Int) {
+        print("loading more")
+//        self.stories = [Item]()
         let smallListID = self.storiesListID[self.initialStories..<self.initialStories+x]
-        for newsID in smallListID {
-            self.fetchOneItem(newsID: newsID)
+        self.initialStories = self.initialStories + x
+              for newsID in smallListID {
+                  self.fetchOneItem(newsID: newsID)
+              }
+    }
+    
+    func refresh(url: URL) {
+        
+        //caricare quelle che non ho e riordinare
+        let task = URLSession.shared.dataTask(with: url) { news, response, error in
+            
+            DispatchQueue.main.async {
+                
+                 let decoder = JSONDecoder()
+                 
+                 if let news = news {
+                     
+                     do {
+                        self.newStories = try decoder.decode([Int].self, from: news)
+                         
+                         for newStory in self.newStories {
+                             if !self.storiesListID.contains(newStory) {
+                                 self.fetchOneItem(newsID: newStory)
+                                 
+                             }
+                         }
+                    
+                     } catch {
+                         print(error)
+                     }
+                 }
+            }
         }
+        task.resume()
+        
     }
     
     func fetchOneItem(newsID: Int) {
+        
+      
         
         let newsUrl = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(newsID).json")
         
@@ -84,12 +126,20 @@ class DataViewModel : ObservableObject {
                     
                     do {
                         let news = try decoder.decode(Item.self, from: news)
+                        
                         self.stories.append(news)
-                        if self.stories.count >= 2 {
-                            self.stories.sort {
-                                $0.score! > $1.score!
+                        if self.urlNumber == 0 {
+                            if self.stories.count >= 2{
+                                self.stories.sort {
+                                    $0.time! > $1.time!
+                                }
                             }
                         }
+//                        if self.storiesCopy.count >= 2 {
+//                            self.storiesCopy.sort {
+//                                $0.score! > $1.score!
+//                            }
+//                        }
                         self.isLoading = false
                     } catch {
                         print(error)
