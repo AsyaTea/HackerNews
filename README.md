@@ -1,6 +1,8 @@
 # Hacker News
 
-Hacker News iOS Application. Technology used: **Swift**, **SwiftUI**, **WebKit**
+Hacker News iOS Application. Technology used: **Swift**, **SwiftUI**, **WebKit**.
+
+API: https://github.com/HackerNews/API
 
 ## Features
 - Recent, Top and Best Stories List
