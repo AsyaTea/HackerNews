@@ -27,7 +27,9 @@ struct Item: Codable, Hashable {
         id = try values.decode(Int.self, forKey: .id)
         by = try values.decode(String.self, forKey: .by)
         type = try values.decode(String.self, forKey: .type)
-        descendants = try values.decode(Int.self, forKey: .descendants)
+        if values.contains(.descendants) {
+            descendants = try values.decode(Int.self, forKey: .descendants)
+        }
         time = try values.decode(Int32.self, forKey: .time)
         if values.contains(.parent) {
             parent = try values.decode(Int.self, forKey: .parent)
@@ -40,9 +42,15 @@ struct Item: Codable, Hashable {
         }
         if values.contains(.url) {
             url = try values.decode(String.self, forKey: .url)
-        }      
-        score = try values.decode(Int.self, forKey: .score)
-        title = try values.decode(String.self, forKey: .title)
+        }
+        if values.contains(.score) {
+            score = try values.decode(Int.self, forKey: .score)
+        }
+        if values.contains(.title) {
+            title = try values.decode(String.self, forKey: .title)
+        }
+      
+     
         
     }
 }

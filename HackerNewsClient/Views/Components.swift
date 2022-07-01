@@ -87,7 +87,7 @@ struct newsView: View {
     var body: some View {
         
             VStack(alignment: .leading, spacing: 10) {
-                Website(dataVM: dataVM, story: story)
+                Website(story: story)
             }
             .padding(20)
             .navigationBarTitleDisplayMode(.inline)
@@ -109,13 +109,14 @@ struct newsView: View {
                     }
                     Button {
                         modalView.toggle()
+                        dataVM.filterComments(storyID: story.id )
                     } label: {
                         Text("Comments")
                     }
                 }
             }
             .sheet(isPresented: $modalView) {
-                CommentsView(dataVM: dataVM, modalView: $modalView)
+                CommentsView(dataVM: dataVM, story: story, modalView: $modalView)
             }
     }
 }
@@ -124,13 +125,12 @@ struct Website: View {
     
     @State private var showWebView = false
     @State private var modalView = false
-    @ObservedObject var dataVM: DataViewModel
+    
     var story: Item
     var date: Date
     
-    init(dataVM: DataViewModel, story: Item) {
+    init(story: Item) {
         self.date = Date(timeIntervalSince1970: TimeInterval(story.time!))
-        self.dataVM = dataVM
         self.story = story
     }
     
@@ -176,27 +176,42 @@ struct Website: View {
 
 struct CommentsView: View {
     @ObservedObject var dataVM: DataViewModel
+    var story: Item
     @Binding var modalView : Bool
     var body: some View {
         NavigationView {
             VStack {
-                List {
-                    NavigationLink(destination: EmptyView()) {
-                        Text("Comment 1")
-                        
+                if dataVM.isLoadingComments {
+                    ProgressView("Loading")
+                } else {
+                    List {
+                        ForEach(dataVM.filteredComments, id:\.self) { comment in
+                          
+                            if comment.text != "" {
+                                NavigationLink(destination: EmptyView()) {
+                                    VStack(alignment: .leading){
+                                        HStack {
+                                            Text(comment.by ?? "")
+                                                .fontWeight(.bold)
+                                            Spacer()
+                                        }
+                                        
+                                        Text(comment.text ?? "")
+                                    }
+                                    .padding()
+                                   
+                                }
+                            
+                            }
+                        }
                     }
-                    
-                    Text("Comment 2")
-                    Text("Comment 3")
-                    Text("Comment 4")
-                }
+                }                
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("Comments")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("< Back") {
-                        print("Help tapped!")
                         modalView.toggle()
                     }
                 }

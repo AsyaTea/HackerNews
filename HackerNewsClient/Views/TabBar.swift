@@ -25,8 +25,7 @@ struct TabBar: View {
                     Image(systemName: "star.fill")
                     Text("Favourites")
                 }
-        }
-        
+        }        
     }
 }
 

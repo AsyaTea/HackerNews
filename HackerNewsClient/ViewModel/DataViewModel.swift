@@ -7,6 +7,7 @@
 
 import Foundation
 import Dispatch
+import SwiftUI
 
 
 class DataViewModel : ObservableObject {
@@ -15,11 +16,14 @@ class DataViewModel : ObservableObject {
     
     @Published var listType = 0
     @Published var stories = [Item]()
+    @Published var comments = [Item]()
+    @Published var filteredComments = [Item]()
     
     var newStories = [Int]()
-    var initialStories = 20
+    var initialStories = 15
     
     @Published var isLoading: Bool = true
+    @Published var isLoadingComments: Bool = true
     @Published var error : String? = nil
     @Published var loadingWebSite = false
     
@@ -58,7 +62,7 @@ class DataViewModel : ObservableObject {
                         self.storiesListID = try decoder.decode([Int].self, from: news)
                          let smallListID = self.storiesListID[..<self.initialStories]
                          for storyID in smallListID {
-                             self.fetchOneItem(newsID: storyID)
+                             self.fetchOneItem(storyID: storyID)
                          }
                      } catch {
                          print(error)
@@ -76,7 +80,7 @@ class DataViewModel : ObservableObject {
             let smallListID = self.storiesListID[self.initialStories..<self.initialStories+moreStories]
             self.initialStories = self.initialStories + moreStories
             for storiesID in smallListID {
-                self.fetchOneItem(newsID: storiesID)
+                self.fetchOneItem(storyID: storiesID)
             }
             
         }
@@ -97,7 +101,7 @@ class DataViewModel : ObservableObject {
                          
                          for newStory in self.newStories {
                              if !self.storiesListID.contains(newStory) {
-                                 self.fetchOneItem(newsID: newStory)
+                                 self.fetchOneItem(storyID: newStory)
                                  
                              }
                          }
@@ -111,9 +115,9 @@ class DataViewModel : ObservableObject {
         task.resume()
     }
     
-    func fetchOneItem(newsID: Int) {
+    func fetchOneItem(storyID: Int) {
        
-        let storyUrl = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(newsID).json")
+        let storyUrl = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(storyID).json")
         
         let task = URLSession.shared.dataTask(with: storyUrl!) { story, response, error in
             let decoder = JSONDecoder()
@@ -123,8 +127,13 @@ class DataViewModel : ObservableObject {
                     
                     do {
                         let story = try decoder.decode(Item.self, from: story)
-                        
                         self.stories.append(story)
+                        if story.kids != nil {
+                            for comment in story.kids! {
+                                self.fetchComment(commentID: comment)
+                            }
+                        }                        
+                        //If news list sort by most recent
                         if self.urlNumber == 0 {
                             if self.stories.count >= 2{
                                 self.stories.sort {
@@ -132,7 +141,7 @@ class DataViewModel : ObservableObject {
                                 }
                             }
                         }
-
+                    
                         self.isLoading = false
                     } catch {
                         print(error)
@@ -141,6 +150,41 @@ class DataViewModel : ObservableObject {
             }
         }
         task.resume()
+    }
+    
+    func fetchComment(commentID: Int) {
+        
+        let url = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(commentID).json")
+        
+        let task = URLSession.shared.dataTask(with: url!) { comment, response, error in
+            
+            let decoder = JSONDecoder()
+            DispatchQueue.main.async {
+                
+                if let comment = comment {
+                    
+                    do {
+                        
+                        let comment = try decoder.decode(Item.self, from: comment)
+                        self.comments.append(comment)
+                        self.isLoadingComments = false
+                       
+                        
+                    } catch {
+                        print(error)
+                    }
+                }
+            }
+        }
+        task.resume()
+    }
+    
+    func filterComments(storyID: Int) {
+        let filteredComments = self.comments.filter { comment in
+            return comment.parent == storyID
+        }
+        self.filteredComments = filteredComments
+        
     }
     
     
@@ -158,4 +202,5 @@ class DataViewModel : ObservableObject {
         }
         db.save(favouritesID: savedItems)
     }
+    
 }
