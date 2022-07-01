@@ -22,7 +22,7 @@ struct ListView : View {
                     }
                     .onAppear {
                         if news == dataVM.stories.last {
-                            dataVM.loadMore(moreStories: 5)
+                            dataVM.loadMore(moreStories: 10)
                               }
                            }
                 }
@@ -81,6 +81,7 @@ struct newsView: View {
     @ObservedObject var dataVM: DataViewModel
     var story: Item
     
+    @State var modalView = false
     @State var isFavourite = false
     
     var body: some View {
@@ -94,6 +95,7 @@ struct newsView: View {
             .toolbar {
                 HStack{
                     Spacer()
+                  
                     Button {
                         isFavourite.toggle()
                         dataVM.toggleFav(item: story)
@@ -105,7 +107,15 @@ struct newsView: View {
                         }
                         
                     }
+                    Button {
+                        modalView.toggle()
+                    } label: {
+                        Text("Comments")
+                    }
                 }
+            }
+            .sheet(isPresented: $modalView) {
+                CommentsView(dataVM: dataVM, modalView: $modalView)
             }
     }
 }
@@ -132,12 +142,20 @@ struct Website: View {
                     WebView(url: URL(string: website)!)
                 } else if story.text != nil {
                     VStack(alignment: .leading, spacing: 20){
-                        Text("Author:  \(story.by ?? "")")
-                            .fontWeight(.bold)
+                        HStack {
+                            Text("Author: ")
+                            Text("\(story.by ?? "")")
+                                .fontWeight(.bold)
+                        }
+                       
                         Text("Item type:  \(story.type ?? "")")
                         if story.time != nil {
                             Text("Date published: \(dateFormatter(time: date))")
                         }
+                        Text("Score: \(story.score ?? 0)")
+                            
+                        Text("Text: ")
+                            
                         Text(story.text ?? "No data to show")
                         Spacer()
                         Spacer()
@@ -160,7 +178,39 @@ struct CommentsView: View {
     @ObservedObject var dataVM: DataViewModel
     @Binding var modalView : Bool
     var body: some View {
-        Text("Here are the comments")
+        NavigationView {
+            VStack {
+                List {
+                    NavigationLink(destination: EmptyView()) {
+                        Text("Comment 1")
+                        
+                    }
+                    
+                    Text("Comment 2")
+                    Text("Comment 3")
+                    Text("Comment 4")
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Comments")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("< Back") {
+                        print("Help tapped!")
+                        modalView.toggle()
+                    }
+                }
+            }
+            
+        }
+      
+
+    }
+}
+
+struct SubCommentView: View {
+    var body: some View {
+        Text("More comments!")
     }
 }
 

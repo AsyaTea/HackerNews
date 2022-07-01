@@ -33,6 +33,7 @@ class DataViewModel : ObservableObject {
     //FAVOURITES OBJECTS
     @Published var savedItems: Set<Int> = []
     private var db = Database()
+    
     var filteredStories : [Item] {
         return stories.filter { savedItems.contains($0.id) }
     }
@@ -70,11 +71,15 @@ class DataViewModel : ObservableObject {
     
     func loadMore(moreStories: Int) {
 
-        let smallListID = self.storiesListID[self.initialStories..<self.initialStories+moreStories]
-        self.initialStories = self.initialStories + moreStories
-          for storiesID in smallListID {
-              self.fetchOneItem(newsID: storiesID)
-          }
+        if self.initialStories <= self.storiesListID.count - moreStories {
+           
+            let smallListID = self.storiesListID[self.initialStories..<self.initialStories+moreStories]
+            self.initialStories = self.initialStories + moreStories
+            for storiesID in smallListID {
+                self.fetchOneItem(newsID: storiesID)
+            }
+            
+        }
     }
     
     func refresh(url: URL) {
